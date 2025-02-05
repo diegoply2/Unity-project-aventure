@@ -8,16 +8,17 @@ public class AttaqueScript : MonoBehaviour
     private PlayerControls playerControls;
     private Animator animator;
     public bool isAttacking = false;
-    public bool isParrying = false;
+    public bool isParrying = false; // Indicateur pour savoir si on est en train de parer
 
     private InputAction attackAction;
     private InputAction parryAction;
-    private bool isRunning;
 
     public List<string> attackAnimations = new List<string> { "Attack1", "Attack2", "Attack3" };
     private AttackSound attackSoundScript;
 
-    public GameObject sword; // Assigne l'épée dans l'Inspector
+    public GameObject sword;
+
+    private PlayerHealth playerHealth;  // Déclarez playerHealth
 
     void Awake()
     {
@@ -32,56 +33,76 @@ public class AttaqueScript : MonoBehaviour
         parryAction.started += ctx => StartParry();
 
         attackSoundScript = GetComponent<AttackSound>();
+
+        // Initialiser playerHealth ici
+        playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>();
+        if (playerHealth == null)
+        {
+            Debug.LogError("PlayerHealth non trouvé !");
+        }
     }
 
     public void StartAttack()
-{
-    if (isAttacking) return;
-    isAttacking = true;
+    {
+        if (isAttacking) return;
+        isAttacking = true;
 
-    string randomAttackAnimation = attackAnimations[Random.Range(0, attackAnimations.Count)];
-    animator.SetBool(randomAttackAnimation, true);
+        // Ajoutez ceci pour mettre à jour l'état de l'attaque
+        if (playerHealth != null)
+        {
+            playerHealth.isAttacking = true;
+        }
 
-    attackSoundScript?.PlayAttackSound();
+        string randomAttackAnimation = attackAnimations[Random.Range(0, attackAnimations.Count)];
+        animator.SetBool(randomAttackAnimation, true);
 
-    // Active le collider de l'épée
-    if (sword != null)
-        sword.GetComponent<Collider>().enabled = true;
+        attackSoundScript?.PlayAttackSound();
 
-    StartCoroutine(ResetAttackBoolAfterDelay(2f));
-}
+        // Active le collider de l'épée
+        if (sword != null)
+            sword.GetComponent<Collider>().enabled = true;
 
-// Désactive le collider après l'attaque
-private IEnumerator ResetAttackBoolAfterDelay(float delay)
-{
-    yield return new WaitForSeconds(delay);
-    
-    animator.SetBool("Attack1", false);
-    animator.SetBool("Attack2", false);
-    animator.SetBool("Attack3", false);
-    
-    isAttacking = false;
+        StartCoroutine(ResetAttackBoolAfterDelay(2f));
+    }
 
-    // Désactiver le collider de l'épée après l'attaque
-    if (sword != null)
-        sword.GetComponent<Collider>().enabled = false;
-}
+    private IEnumerator ResetAttackBoolAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        animator.SetBool("Attack1", false);
+        animator.SetBool("Attack2", false);
+        animator.SetBool("Attack3", false);
+
+        isAttacking = false;
+
+        // Désactive le collider de l'épée après l'attaque
+        if (sword != null)
+            sword.GetComponent<Collider>().enabled = false;
+
+        // Réinitialise l'état de l'attaque dans PlayerHealth
+        if (playerHealth != null)
+        {
+            playerHealth.isAttacking = false;
+        }
+    }
 
     public void StartParry()
     {
-        if (isParrying) return;
-        isParrying = true;
+        // Si une attaque est en cours, on ne peut pas parer
+        if (isAttacking) return;
 
+        // Si le joueur n'est pas en train de parer, on lance la parade
+        isParrying = true;
         attackSoundScript?.PlayParrySound();
+
+        // Réinitialisation de l'état de la parade après 1 seconde
         StartCoroutine(ResetParryBoolAfterDelay(1f));
     }
-
-    
 
     private IEnumerator ResetParryBoolAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
-        isParrying = false;
+        isParrying = false; // Fin de la parade après un délai
     }
 
     void OnDisable()

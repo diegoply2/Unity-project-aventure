@@ -54,13 +54,16 @@ public class EnemyAttack : MonoBehaviour
 
         Debug.Log("L'ennemi attaque !");
 
-        // Vérification du contact avec le joueur
+        // Attendre la durée de l'attaque pour simuler l'animation
+        yield return new WaitForSeconds(1f); // Simule la durée de l'animation d'attaque
+
+        // Vérification du contact avec le joueur et réduction des dégâts après l'attaque
         if (Vector3.Distance(transform.position, player.position) <= attackRange)
         {
             PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
-                if (playerParadeScript != null && playerParadeScript.isParrying)  // Si le joueur est en train de parer
+                if (playerParadeScript != null && playerParadeScript.isParrying && !playerHealth.isAttacking)  // Si le joueur est en train de parer et n'attaque pas
                 {
                     Debug.Log("Le joueur a paré l'attaque !");
                     // Réduction des dégâts de 1/4 en cas de parade
@@ -74,9 +77,6 @@ public class EnemyAttack : MonoBehaviour
             }
         }
 
-        // Attendre la durée de l'attaque
-        yield return new WaitForSeconds(1f);
-
         // Réinitialisation du paramètre d'attaque dans l'Animator
         if (animator != null)
         {
@@ -88,16 +88,18 @@ public class EnemyAttack : MonoBehaviour
 
     // OnTriggerEnter corrigé pour appeler StartParry depuis ParadeScript
     private void OnTriggerEnter(Collider other)
+{
+    if (other.CompareTag("PlayerSword")) // Vérifie si c'est bien l'épée du joueur
     {
-        if (other.CompareTag("PlayerSword")) // Vérifie si c'est bien l'épée du joueur
+        // Vérifiez maintenant l'état d'attaque dans AttaqueScript au lieu de ParadeScript
+        AttaqueScript playerAttackScript = player.GetComponent<AttaqueScript>();
+
+        if (playerAttackScript != null && !playerParadeScript.isParrying && !playerAttackScript.isAttacking)
         {
             if (Random.value < parryChance) // Si le nombre généré est inférieur à la probabilité de parade
             {
-                if (playerParadeScript != null)
-                {
-                    playerParadeScript.StartParry(); // L'ennemi effectue une parade via ParadeScript
-                    Debug.Log("L'ennemi a paré l'attaque !");
-                }
+                playerParadeScript.StartParry(); // L'ennemi effectue une parade via ParadeScript
+                Debug.Log("L'ennemi a paré l'attaque !");
             }
             else
             {
@@ -108,3 +110,5 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 }
+}
+

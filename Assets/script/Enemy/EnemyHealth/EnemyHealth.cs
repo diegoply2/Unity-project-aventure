@@ -2,38 +2,48 @@ using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour
 {
-    public float maxHealth = 100f;       // Santé maximale de l'ennemi
-    public float currentHealth;          // Santé actuelle de l'ennemi
+    public float maxHealth = 100f;  // Vie maximale de l'ennemi
+    [SerializeField] private float currentHealth;    // Vie actuelle de l'ennemi
 
-    private void Start()
+    private Animator animator;
+    private bool isDead = false;
+
+    void Start()
     {
-        // Initialisation de la santé actuelle à la santé maximale
-        currentHealth = maxHealth;
+        currentHealth = maxHealth;  // Initialisation de la vie de l'ennemi
+        animator = GetComponent<Animator>();  // Si vous avez un Animator pour l'ennemi
     }
 
-    // Méthode pour infliger des dégâts à l'ennemi
-    public void TakeDamage(float damage)
+    // Méthode pour recevoir des dégâts
+    public void TakeDamage(float amount)
     {
-        currentHealth -= damage; // Réduire la santé actuelle
+        if (isDead) return;  // Si l'ennemi est déjà mort, il ne prend plus de dégâts
 
-        // Vérifier que la santé ne soit pas inférieure à 0
-        if (currentHealth < 0)
-        {
-            currentHealth = 0;
-        }
+        currentHealth -= amount;  // Réduire la vie de l'ennemi
 
-        // Vérifier si l'ennemi est mort
-        if (currentHealth <= 0)
+        if (currentHealth <= 0 && !isDead)
         {
-            Die(); // Appeler la méthode de mort de l'ennemi
+            Die();  // Si la vie atteint 0, l'ennemi meurt
         }
     }
 
     // Méthode pour gérer la mort de l'ennemi
     private void Die()
     {
-        // Vous pouvez ajouter des effets ici, comme des animations, des sons, etc.
-        Debug.Log("L'ennemi est mort !");
-        Destroy(gameObject); // Détruire l'ennemi après sa mort
+        isDead = true;
+
+        if (animator != null)
+        {
+            animator.SetBool("IsDead", true);  // Active l'animation de mort dans l'Animator
+        }
+
+        // Vous pouvez aussi ajouter des effets comme des particules de mort ou un son ici
+        Destroy(gameObject, 2f);  // Délai de 2 secondes avant de détruire l'ennemi du jeu
+    }
+
+    // Méthode pour afficher l'état de la vie (facultatif, pour les débogages)
+    void OnGUI()
+    {
+        GUI.Label(new Rect(10, 10, 200, 20), "Vie de l'ennemi : " + currentHealth);
     }
 }
