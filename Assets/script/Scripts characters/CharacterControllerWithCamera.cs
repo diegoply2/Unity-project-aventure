@@ -41,38 +41,23 @@ public class CharacterControllerWithCamera : MonoBehaviour
     {
         // Vérifier la présence de la caméra principale
         cameraTransform = Camera.main?.transform;
-        if (cameraTransform == null)
-        {
-            Debug.LogError("La caméra principale n'a pas été trouvée !");
-        }
+        
 
         playerControls = new PlayerControls();
         playerControls.Enable(); // Activer les actions d'entrée
 
         // Vérifier la présence du CharacterController, Animator et AttaqueScript
         characterController = GetComponent<CharacterController>();
-        if (characterController == null)
-        {
-            Debug.LogError("Le CharacterController n'a pas été trouvé sur l'objet.");
-        }
+        
 
         animator = GetComponent<Animator>();
-        if (animator == null)
-        {
-            Debug.LogError("L'Animator n'a pas été trouvé sur l'objet.");
-        }
+        
 
         attackScript = GetComponent<AttaqueScript>();
-        if (attackScript == null)
-        {
-            Debug.LogError("Le script d'attaque n'a pas été trouvé sur l'objet.");
-        }
+        
 
         parryScript = GetComponent<ParadeScript>();
-        if (parryScript == null)
-        {
-            Debug.LogError("Le script ParadeScript n'a pas été trouvé sur l'objet.");
-        }
+        
 
 
         // Obtenir les actions du player
@@ -245,13 +230,13 @@ public class CharacterControllerWithCamera : MonoBehaviour
 
 public void DisableMovement()
 {
-    Debug.Log("Mouvement désactivé");
+    
     moveInput = Vector2.zero;
 }
 
 public void EnableMovement()
 {
-    Debug.Log("Mouvement réactivé");
+    
     moveInput = playerControls.Player.Move.ReadValue<Vector2>();
 }
 

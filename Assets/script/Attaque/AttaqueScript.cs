@@ -36,10 +36,7 @@ public class AttaqueScript : MonoBehaviour
 
         // Initialiser playerHealth ici
         playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>();
-        if (playerHealth == null)
-        {
-            Debug.LogError("PlayerHealth non trouvé !");
-        }
+        
     }
 
     public void StartAttack()
@@ -107,8 +104,36 @@ public class AttaqueScript : MonoBehaviour
 
     void OnDisable()
     {
-        playerControls?.Disable();
-        attackAction?.Disable();
-        parryAction?.Disable();
+        if (playerControls != null)
+        {
+            playerControls.Disable();  // Désactiver les contrôles du joueur lorsque le script est désactivé
+        }
+        if (attackAction != null)
+        {
+            attackAction.Disable();
+        }
+        if (parryAction != null)
+        {
+            parryAction.Disable();
+        }
     }
+
+    // Cette méthode sera appelée lors de la collision de l'attaque avec un ennemi
+    private void OnTriggerEnter(Collider other)
+{
+    if (isAttacking)
+    {
+        // Vérifier si l'attaque touche un objet avec le tag "Enemy"
+        if (other.CompareTag("Enemy"))
+        {
+            EnemyHealth enemyHealth = other.GetComponent<EnemyHealth>();
+            if (enemyHealth != null)
+            {
+                // Infliger des dégâts à l'ennemi
+                enemyHealth.TakeDamage(10f);  // Remplacez 10f par le montant des dégâts
+                Debug.Log("L'ennemi a perdu des points de santé !");
+            }
+        }
+    }
+}
 }

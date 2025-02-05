@@ -17,17 +17,11 @@ public class EnemyAttack : MonoBehaviour
     {
         player = GameObject.FindGameObjectWithTag("Player").transform; // Trouve le joueur
         animator = GetComponent<Animator>();
-        if (animator == null)
-        {
-            Debug.LogError("Animator non trouvé !");
-        }
+        
 
         // Obtenir la référence à ParadeScript du joueur
         playerParadeScript = player.GetComponent<ParadeScript>();
-        if (playerParadeScript == null)
-        {
-            Debug.LogError("ParadeScript non trouvé sur le joueur !");
-        }
+        
     }
 
     public void Update()
@@ -43,7 +37,7 @@ public class EnemyAttack : MonoBehaviour
         isAttacking = true;
 
         float attackDelay = Random.Range(minAttackDelay, maxAttackDelay);
-        Debug.Log("L'ennemi prépare une attaque. Délai : " + attackDelay);
+        
 
         yield return new WaitForSeconds(attackDelay);
 
@@ -52,7 +46,7 @@ public class EnemyAttack : MonoBehaviour
             animator.SetBool("EnemyAttack", true); // Lancer l'attaque
         }
 
-        Debug.Log("L'ennemi attaque !");
+      
 
         // Attendre la durée de l'attaque pour simuler l'animation
         yield return new WaitForSeconds(1f); // Simule la durée de l'animation d'attaque
@@ -65,13 +59,13 @@ public class EnemyAttack : MonoBehaviour
             {
                 if (playerParadeScript != null && playerParadeScript.isParrying && !playerHealth.isAttacking)  // Si le joueur est en train de parer et n'attaque pas
                 {
-                    Debug.Log("Le joueur a paré l'attaque !");
+                    
                     // Réduction des dégâts de 1/4 en cas de parade
                     playerHealth.TakeDamage(Random.Range(2f, 5f) * 0.75f, false);  // Réduit les dégâts de 25%
                 }
                 else
                 {
-                    Debug.Log("L'ennemi touche le joueur !");
+                    
                     playerHealth.TakeDamage(Random.Range(2f, 5f), false);  // Applique des dégâts à la santé du joueur
                 }
             }
@@ -99,14 +93,9 @@ public class EnemyAttack : MonoBehaviour
             if (Random.value < parryChance) // Si le nombre généré est inférieur à la probabilité de parade
             {
                 playerParadeScript.StartParry(); // L'ennemi effectue une parade via ParadeScript
-                Debug.Log("L'ennemi a paré l'attaque !");
+               
             }
-            else
-            {
-                // L'ennemi reçoit les dégâts ici
-                Debug.Log("L'ennemi a été touché !");
-                // Infligez des dégâts à l'ennemi ici (logique à définir)
-            }
+            
         }
     }
 }
