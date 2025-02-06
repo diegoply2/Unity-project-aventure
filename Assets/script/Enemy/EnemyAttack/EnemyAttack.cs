@@ -1,6 +1,5 @@
 using UnityEngine;
-using System.Collections;  // Nécessaire pour utiliser IEnumerator
-
+using System.Collections;
 
 public class EnemyAttack : MonoBehaviour
 {
@@ -13,18 +12,16 @@ public class EnemyAttack : MonoBehaviour
     private Transform player;
     private Animator animator;
     private ParadeScript playerParadeScript; // Référence à ParadeScript
-    private EnemyAttackSound enemyAttackSoundScript; // Référence à EnemyAttackSound
 
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform; // Trouve le joueur
         animator = GetComponent<Animator>();
+        
 
         // Obtenir la référence à ParadeScript du joueur
         playerParadeScript = player.GetComponent<ParadeScript>();
-
-        // Récupérer la référence à EnemyAttackSound
-        enemyAttackSoundScript = GetComponent<EnemyAttackSound>(); // Si EnemyAttackSound est attaché au même GameObject
+        
     }
 
     public void Update()
@@ -40,23 +37,16 @@ public class EnemyAttack : MonoBehaviour
         isAttacking = true;
 
         float attackDelay = Random.Range(minAttackDelay, maxAttackDelay);
+        
 
         yield return new WaitForSeconds(attackDelay);
-
-        // Lancer le son de l'attaque
-        if (enemyAttackSoundScript != null)
-        {
-            enemyAttackSoundScript.EnemyPlayAttackSound();  // Appeler la méthode sur l'instance
-        }
-        else
-        {
-            Debug.LogWarning("EnemyAttackSoundScript is not assigned.");
-        }
 
         if (animator != null)
         {
             animator.SetBool("EnemyAttack", true); // Lancer l'attaque
         }
+
+      
 
         // Attendre la durée de l'attaque pour simuler l'animation
         yield return new WaitForSeconds(1f); // Simule la durée de l'animation d'attaque
@@ -69,13 +59,14 @@ public class EnemyAttack : MonoBehaviour
             {
                 if (playerParadeScript != null && playerParadeScript.isParrying && !playerHealth.isAttacking)  // Si le joueur est en train de parer et n'attaque pas
                 {
+                    
                     // Réduction des dégâts de 1/4 en cas de parade
                     playerHealth.TakeDamage(Random.Range(2f, 5f) * 0.75f, false);  // Réduit les dégâts de 25%
                 }
                 else
                 {
-                    // Applique des dégâts à la santé du joueur
-                    playerHealth.TakeDamage(Random.Range(2f, 5f), false);
+                    
+                    playerHealth.TakeDamage(Random.Range(2f, 5f), false);  // Applique des dégâts à la santé du joueur
                 }
             }
         }
@@ -91,19 +82,22 @@ public class EnemyAttack : MonoBehaviour
 
     // OnTriggerEnter corrigé pour appeler StartParry depuis ParadeScript
     private void OnTriggerEnter(Collider other)
+{
+    if (other.CompareTag("PlayerSword")) // Vérifie si c'est bien l'épée du joueur
     {
-        if (other.CompareTag("PlayerSword")) // Vérifie si c'est bien l'épée du joueur
-        {
-            // Vérifiez maintenant l'état d'attaque dans AttaqueScript au lieu de ParadeScript
-            AttaqueScript playerAttackScript = player.GetComponent<AttaqueScript>();
+        // Vérifiez maintenant l'état d'attaque dans AttaqueScript au lieu de ParadeScript
+        AttaqueScript playerAttackScript = player.GetComponent<AttaqueScript>();
 
-            if (playerAttackScript != null && !playerParadeScript.isParrying && !playerAttackScript.isAttacking)
+        if (playerAttackScript != null && !playerParadeScript.isParrying && !playerAttackScript.isAttacking)
+        {
+            if (Random.value < parryChance) // Si le nombre généré est inférieur à la probabilité de parade
             {
-                if (Random.value < parryChance) // Si le nombre généré est inférieur à la probabilité de parade
-                {
-                    playerParadeScript.StartParry(); // L'ennemi effectue une parade via ParadeScript
-                }
+                playerParadeScript.StartParry(); // L'ennemi effectue une parade via ParadeScript
+               
             }
+            
         }
     }
 }
+}
+

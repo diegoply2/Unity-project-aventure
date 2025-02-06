@@ -149,7 +149,7 @@ public class AttaqueScript : MonoBehaviour
                 if (enemyHealth != null)
                 {
                     // Infliger des dégâts à l'ennemi
-                    enemyHealth.TakeDamage(5f);  // Remplacez 10f par le montant des dégâts
+                    enemyHealth.TakeDamage(10f);  // Remplacez 10f par le montant des dégâts
                     Debug.Log("L'ennemi a perdu des points de santé !");
                 }
             }

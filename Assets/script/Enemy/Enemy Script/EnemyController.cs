@@ -195,12 +195,23 @@ public class EnemyController : MonoBehaviour
     // Calculer la direction vers le joueur
     Vector3 directionToPlayer = (enemyVision.player.position - transform.position).normalized;
 
-    // Utilisation de pursuitSpeed pendant la poursuite
+    // Calculer la distance entre l'ennemi et le joueur
+    float distanceToPlayer = Vector3.Distance(transform.position, enemyVision.player.position);
+
+    // Si la distance est inférieure à 2 unités, l'ennemi est en combat et ne doit pas se déplacer
+    if (distanceToPlayer <= 2f)
+    {
+        // Appeler l'attaque sans mouvement
+        enemyAttack.Update();  // Lancer l'attaque ici
+        return;  // L'ennemi cesse de se déplacer à cette distance
+    }
+
+    // Si l'ennemi n'est pas à portée de combat, se déplacer vers le joueur
     float currentSpeed = isPursuing ? pursuitSpeed : moveSpeed;
 
     // Déplacer l'ennemi vers le joueur
     characterController.Move(directionToPlayer * currentSpeed * Time.deltaTime);
-    
+
     // Si la direction vers le joueur est valide, effectuer une rotation fluide
     if (directionToPlayer != Vector3.zero)
     {
@@ -213,6 +224,8 @@ public class EnemyController : MonoBehaviour
 
     UpdateAnimator(directionToPlayer);
 }
+
+
 
 
 

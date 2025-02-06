@@ -39,27 +39,23 @@ public class EnemyHealth : MonoBehaviour
     }
 
     private void Die()
-{
-    isDead = true;
-
-    if (animator != null)
     {
-        animator.SetBool("EnemyDie", true);  // Joue une animation de mort si vous en avez une
+        isDead = true;
+
+        if (animator != null)
+        {
+            animator.SetBool("EnemyDie", true);  // Joue une animation de mort si vous en avez une
+        }
+
+        // Empêche d'autres interactions
+        GetComponent<Collider>().enabled = false;  // Désactive les collisions
+
+        // Désactive le CharacterController si présent
+        if (characterController != null)
+        {
+            characterController.enabled = false;  // Empêche les déplacements du personnage
+        }
+
+        
     }
-
-    // Empêche d'autres interactions
-    GetComponent<Collider>().enabled = false;  // Désactive les collisions
-
-    // Désactive le CharacterController si présent
-    if (characterController != null)
-    {
-        characterController.enabled = false;  // Empêche les déplacements du personnage
-    }
-
-    // Correction de la position pour éviter que le joueur reste suspendu dans l'air
-    Vector3 currentPosition = transform.position;
-    currentPosition.y = 0f;  // Ajuste la hauteur pour qu'il touche le sol
-    transform.position = currentPosition;
-}
-
 }
