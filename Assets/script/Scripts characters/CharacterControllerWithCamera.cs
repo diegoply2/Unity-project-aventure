@@ -41,24 +41,20 @@ public class CharacterControllerWithCamera : MonoBehaviour
     {
         // Vérifier la présence de la caméra principale
         cameraTransform = Camera.main?.transform;
-        
 
-        playerControls = new PlayerControls();
-        playerControls.Enable(); // Activer les actions d'entrée
+        // Initialisation de playerControls
+        if (playerControls == null)
+        {
+            playerControls = new PlayerControls();
+            playerControls.Enable();
+            Debug.Log("playerControls initialisé dans Awake.");
+        }
 
-        // Vérifier la présence du CharacterController, Animator et AttaqueScript
+        // Vérification de l'initialisation du CharacterController, Animator et autres composants
         characterController = GetComponent<CharacterController>();
-        
-
         animator = GetComponent<Animator>();
-        
-
         attackScript = GetComponent<AttaqueScript>();
-        
-
         parryScript = GetComponent<ParadeScript>();
-        
-
 
         // Obtenir les actions du player
         jumpAction = playerControls.Player.Jump;
@@ -73,8 +69,7 @@ public class CharacterControllerWithCamera : MonoBehaviour
 
     void Update()
     {
-        // Si le personnage attaque, ne pas gérer les mouvements
-        if ((attackScript != null && attackScript.isAttacking) || (parryScript != null && parryScript.isParrying))
+        if (attackScript != null && attackScript.isAttacking || (parryScript != null && parryScript.isParrying))
         {
             smoothMoveInput = Vector2.zero; // Désactiver le mouvement pendant l'attaque ou la parade
         }
@@ -85,10 +80,9 @@ public class CharacterControllerWithCamera : MonoBehaviour
             ApplyDeadzone(ref moveInput);
 
             smoothMoveInput = Vector2.Lerp(smoothMoveInput, moveInput, 0.2f);
-        if (moveInput == Vector2.zero)
-            smoothMoveInput = Vector2.zero;
+            if (moveInput == Vector2.zero)
+                smoothMoveInput = Vector2.zero;
         }
-
 
         isGrounded = characterController.isGrounded;
 
@@ -213,31 +207,39 @@ public class CharacterControllerWithCamera : MonoBehaviour
     }
 
     void OnDisable()
-{
-    if (playerControls != null)
     {
-        playerControls.Disable(); // Désactiver les entrées lorsque le script est désactivé
+        if (playerControls != null)
+        {
+            playerControls.Disable();
+            Debug.Log("Contrôles du joueur désactivés.");
+        }
+        else
+        {
+            Debug.LogWarning("playerControls est null. Impossible de désactiver.");
+        }
+
+        // Désactivation des autres scripts liés si nécessaire
+        if (attackScript != null)
+        {
+            attackScript.StopAttack(); // Si vous avez une fonction d'arrêt d'attaque
+        }
     }
 
-    // Si vous avez d'autres objets comme attackScript ou des composants, vous pouvez également les vérifier ici.
-    if (attackScript != null)
+    public void Die()
     {
-        // Effectuer des actions de nettoyage supplémentaires pour l'attaque, si nécessaire.
+        // Logique de mort du joueur
+        // Désactive les contrôles à la mort du joueur
+        playerControls.Player.Disable();
+        Debug.Log("Le joueur est mort. Les contrôles sont désactivés.");
     }
 
-    
-}
+    public void DisableMovement()
+    {
+        moveInput = Vector2.zero; // Désactive le mouvement
+    }
 
-public void DisableMovement()
-{
-    
-    moveInput = Vector2.zero;
-}
-
-public void EnableMovement()
-{
-    
-    moveInput = playerControls.Player.Move.ReadValue<Vector2>();
-}
-
+    public void EnableMovement()
+    {
+        moveInput = playerControls.Player.Move.ReadValue<Vector2>();
+    }
 }

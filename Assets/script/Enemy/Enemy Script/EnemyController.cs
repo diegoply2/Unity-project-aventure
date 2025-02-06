@@ -31,6 +31,9 @@ public class EnemyController : MonoBehaviour
 
     private EnemyAttack enemyAttack;                           // Référence au script EnemyAttack
 
+    // Ajoute cette variable
+    private bool isDead = false;
+
     void Awake()
     {
         startPosition = transform.position;
@@ -66,6 +69,11 @@ public class EnemyController : MonoBehaviour
 
     void Update()
     {
+        if (isDead)
+        {
+            return; // Ne fais rien si l'ennemi est mort
+        }
+
         if (enemyVision != null && enemyVision.playerInSight)
         {
             if (!isPursuing)
@@ -181,28 +189,32 @@ public class EnemyController : MonoBehaviour
     }
 
     void MoveTowardsPlayer()
+{
+    if (isDead || characterController == null || !characterController.enabled) return;  // Vérifie si l'ennemi est mort ou si le CharacterController est désactivé
+
+    // Calculer la direction vers le joueur
+    Vector3 directionToPlayer = (enemyVision.player.position - transform.position).normalized;
+
+    // Utilisation de pursuitSpeed pendant la poursuite
+    float currentSpeed = isPursuing ? pursuitSpeed : moveSpeed;
+
+    // Déplacer l'ennemi vers le joueur
+    characterController.Move(directionToPlayer * currentSpeed * Time.deltaTime);
+    
+    // Si la direction vers le joueur est valide, effectuer une rotation fluide
+    if (directionToPlayer != Vector3.zero)
     {
-        // Calculer la direction vers le joueur
-        Vector3 directionToPlayer = (enemyVision.player.position - transform.position).normalized;
+        // Calculer la rotation nécessaire pour faire face au joueur
+        Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
 
-        // Utilisation de pursuitSpeed pendant la poursuite
-        float currentSpeed = isPursuing ? pursuitSpeed : moveSpeed;
-
-        // Déplacer l'ennemi vers le joueur
-        characterController.Move(directionToPlayer * currentSpeed * Time.deltaTime);
-        
-        // Si la direction vers le joueur est valide, effectuer une rotation fluide
-        if (directionToPlayer != Vector3.zero)
-        {
-            // Calculer la rotation nécessaire pour faire face au joueur
-            Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
-
-            // Appliquer la rotation fluide avec Quaternion.Slerp
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-        }
-
-        UpdateAnimator(directionToPlayer);
+        // Appliquer la rotation fluide avec Quaternion.Slerp
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
     }
+
+    UpdateAnimator(directionToPlayer);
+}
+
+
 
     void StartPause()
     {
@@ -218,5 +230,20 @@ public class EnemyController : MonoBehaviour
             animator.SetFloat("AxeX", direction.x);
             animator.SetFloat("AxeY", Mathf.Max(0.1f, direction.z));
         }
+    }
+
+    // Ajoute cette méthode pour gérer la mort de l'ennemi
+    public void Die()
+    {
+        isDead = true;
+        // Désactiver le CharacterController si nécessaire
+        if (characterController != null)
+        {
+            characterController.enabled = false;  // Empêche tout mouvement
+        }
+
+        // Autres actions lors de la mort (animation, etc.)
+        animator.SetBool("EnemyDie", true);  // Joue l'animation de mort
+        GetComponent<Collider>().enabled = false;  // Désactive les collisions
     }
 }

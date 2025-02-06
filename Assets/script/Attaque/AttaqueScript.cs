@@ -36,7 +36,6 @@ public class AttaqueScript : MonoBehaviour
 
         // Initialiser playerHealth ici
         playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>();
-        
     }
 
     public void StartAttack()
@@ -83,6 +82,26 @@ public class AttaqueScript : MonoBehaviour
         }
     }
 
+    public void StopAttack()  // Nouvelle méthode pour arrêter l'attaque
+    {
+        isAttacking = false;
+        
+        // Arrêter l'animation d'attaque si nécessaire
+        animator.SetBool("Attack1", false);
+        animator.SetBool("Attack2", false);
+        animator.SetBool("Attack3", false);
+        
+        // Désactiver le collider de l'épée immédiatement
+        if (sword != null)
+            sword.GetComponent<Collider>().enabled = false;
+
+        // Réinitialiser l'état de l'attaque dans PlayerHealth
+        if (playerHealth != null)
+        {
+            playerHealth.isAttacking = false;
+        }
+    }
+
     public void StartParry()
     {
         // Si une attaque est en cours, on ne peut pas parer
@@ -120,20 +139,20 @@ public class AttaqueScript : MonoBehaviour
 
     // Cette méthode sera appelée lors de la collision de l'attaque avec un ennemi
     private void OnTriggerEnter(Collider other)
-{
-    if (isAttacking)
     {
-        // Vérifier si l'attaque touche un objet avec le tag "Enemy"
-        if (other.CompareTag("Enemy"))
+        if (isAttacking)
         {
-            EnemyHealth enemyHealth = other.GetComponent<EnemyHealth>();
-            if (enemyHealth != null)
+            // Vérifier si l'attaque touche un objet avec le tag "Enemy"
+            if (other.CompareTag("Enemy"))
             {
-                // Infliger des dégâts à l'ennemi
-                enemyHealth.TakeDamage(10f);  // Remplacez 10f par le montant des dégâts
-                Debug.Log("L'ennemi a perdu des points de santé !");
+                EnemyHealth enemyHealth = other.GetComponent<EnemyHealth>();
+                if (enemyHealth != null)
+                {
+                    // Infliger des dégâts à l'ennemi
+                    enemyHealth.TakeDamage(10f);  // Remplacez 10f par le montant des dégâts
+                    Debug.Log("L'ennemi a perdu des points de santé !");
+                }
             }
         }
     }
-}
 }
