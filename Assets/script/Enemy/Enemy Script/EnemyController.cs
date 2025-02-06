@@ -34,6 +34,9 @@ public class EnemyController : MonoBehaviour
     // Ajoute cette variable
     private bool isDead = false;
 
+    private bool isAttacking = false;
+
+
     void Awake()
     {
         startPosition = transform.position;
@@ -209,8 +212,11 @@ public class EnemyController : MonoBehaviour
     // Si l'ennemi n'est pas à portée de combat, se déplacer vers le joueur
     float currentSpeed = isPursuing ? pursuitSpeed : moveSpeed;
 
-    // Déplacer l'ennemi vers le joueur
-    characterController.Move(directionToPlayer * currentSpeed * Time.deltaTime);
+    // Déplacer l'ennemi vers le joueur uniquement si la distance est suffisamment grande
+    if (distanceToPlayer > 2f)  // Empêche l'ennemi de continuer à se déplacer si déjà en combat
+    {
+        characterController.Move(directionToPlayer * currentSpeed * Time.deltaTime);
+    }
 
     // Si la direction vers le joueur est valide, effectuer une rotation fluide
     if (directionToPlayer != Vector3.zero)
@@ -224,6 +230,8 @@ public class EnemyController : MonoBehaviour
 
     UpdateAnimator(directionToPlayer);
 }
+
+
 
 
 

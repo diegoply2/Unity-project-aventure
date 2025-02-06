@@ -37,6 +37,8 @@ public class CharacterControllerWithCamera : MonoBehaviour
     private AttaqueScript attackScript; // Référence au script d'attaque
     private ParadeScript parryScript;
 
+    public Transform Enemy;
+
     void Awake()
     {
         // Vérifier la présence de la caméra principale
@@ -119,6 +121,18 @@ public class CharacterControllerWithCamera : MonoBehaviour
     }
 
     void MoveCharacter()
+{
+    // Calculer la distance entre le joueur et l'ennemi
+    float distanceToEnemy = Vector3.Distance(transform.position, Enemy.position);  // Supposons que `enemy` soit une référence à l'ennemi
+
+    // Si le joueur est trop proche de l'ennemi, désactive le mouvement
+    if (distanceToEnemy <= 2f)  // Ajuste cette distance selon tes besoins
+    {
+        smoothMoveInput = Vector2.zero;  // Désactiver le mouvement
+    }
+
+    // Si le joueur n'est pas trop proche, continuer à appliquer le mouvement
+    if (smoothMoveInput != Vector2.zero)
     {
         Vector3 forward = cameraTransform.forward;
         Vector3 right = cameraTransform.right;
@@ -128,6 +142,8 @@ public class CharacterControllerWithCamera : MonoBehaviour
         float currentMoveSpeed = isRunning ? runSpeed : moveSpeed;
         characterController.Move(moveDirection * currentMoveSpeed * Time.deltaTime);
     }
+}
+
 
     void RotateCharacterWithCamera()
     {
@@ -207,23 +223,23 @@ public class CharacterControllerWithCamera : MonoBehaviour
     }
 
     void OnDisable()
+{
+    if (playerControls != null)
     {
-        if (playerControls != null)
-        {
-            playerControls.Disable();
-            Debug.Log("Contrôles du joueur désactivés.");
-        }
-        else
-        {
-            Debug.LogWarning("playerControls est null. Impossible de désactiver.");
-        }
-
-        // Désactivation des autres scripts liés si nécessaire
-        if (attackScript != null)
-        {
-            attackScript.StopAttack(); // Si vous avez une fonction d'arrêt d'attaque
-        }
+        playerControls.Disable();
+        Debug.Log("Contrôles du joueur désactivés.");
     }
+    else
+    {
+        Debug.LogWarning("playerControls est null. Impossible de désactiver.");
+    }
+
+    // Désactivation des autres scripts liés si nécessaire
+    if (attackScript != null)
+    {
+        attackScript.StopAttack(); // Si vous avez une fonction d'arrêt d'attaque
+    }
+}
 
     public void Die()
     {

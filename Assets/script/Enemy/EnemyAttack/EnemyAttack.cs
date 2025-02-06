@@ -33,52 +33,47 @@ public class EnemyAttack : MonoBehaviour
     }
 
     private IEnumerator AttackWithDelay()
+{
+    isAttacking = true;  // Indiquer que l'ennemi est en attaque
+
+    float attackDelay = Random.Range(minAttackDelay, maxAttackDelay);
+    yield return new WaitForSeconds(attackDelay);
+
+    if (animator != null)
     {
-        isAttacking = true;
+        animator.SetBool("EnemyAttack", true); // Lancer l'attaque
+    }
 
-        float attackDelay = Random.Range(minAttackDelay, maxAttackDelay);
-        
+    // Attendre la durée de l'attaque pour simuler l'animation
+    yield return new WaitForSeconds(1f); // Simule la durée de l'animation d'attaque
 
-        yield return new WaitForSeconds(attackDelay);
-
-        if (animator != null)
+    // Vérification du contact avec le joueur et réduction des dégâts après l'attaque
+    if (Vector3.Distance(transform.position, player.position) <= attackRange)
+    {
+        PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
+        if (playerHealth != null)
         {
-            animator.SetBool("EnemyAttack", true); // Lancer l'attaque
-        }
-
-      
-
-        // Attendre la durée de l'attaque pour simuler l'animation
-        yield return new WaitForSeconds(1f); // Simule la durée de l'animation d'attaque
-
-        // Vérification du contact avec le joueur et réduction des dégâts après l'attaque
-        if (Vector3.Distance(transform.position, player.position) <= attackRange)
-        {
-            PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
-            if (playerHealth != null)
+            if (playerParadeScript != null && playerParadeScript.isParrying && !playerHealth.isAttacking)  // Si le joueur est en train de parer et n'attaque pas
             {
-                if (playerParadeScript != null && playerParadeScript.isParrying && !playerHealth.isAttacking)  // Si le joueur est en train de parer et n'attaque pas
-                {
-                    
-                    // Réduction des dégâts de 1/4 en cas de parade
-                    playerHealth.TakeDamage(Random.Range(2f, 5f) * 0.75f, false);  // Réduit les dégâts de 25%
-                }
-                else
-                {
-                    
-                    playerHealth.TakeDamage(Random.Range(2f, 5f), false);  // Applique des dégâts à la santé du joueur
-                }
+                // Réduction des dégâts de 1/4 en cas de parade
+                playerHealth.TakeDamage(Random.Range(2f, 5f) * 0.75f, false);  // Réduit les dégâts de 25%
+            }
+            else
+            {
+                // Applique des dégâts à la santé du joueur
+                playerHealth.TakeDamage(Random.Range(2f, 5f), false);
             }
         }
-
-        // Réinitialisation du paramètre d'attaque dans l'Animator
-        if (animator != null)
-        {
-            animator.SetBool("EnemyAttack", false);  // Fin de l'attaque
-        }
-
-        isAttacking = false;
     }
+
+    // Réinitialisation du paramètre d'attaque dans l'Animator
+    if (animator != null)
+    {
+        animator.SetBool("EnemyAttack", false);  // Fin de l'attaque
+    }
+
+    isAttacking = false;  // L'ennemi n'attaque plus
+}
 
     // OnTriggerEnter corrigé pour appeler StartParry depuis ParadeScript
     private void OnTriggerEnter(Collider other)

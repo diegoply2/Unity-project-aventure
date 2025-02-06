@@ -119,11 +119,8 @@ public class PlayerHealth : MonoBehaviour
     }
 
     // Vous pouvez également arrêter les autres actions comme l'attaque ou les animations de mouvement si nécessaire
-
-    // Si vous voulez changer de scène ou ajouter une animation de fin, vous pouvez le faire ici
-    // Exemple :
-    // SceneManager.LoadScene("GameOverScene"); // Exemple de changement de scène
 }
+
 
 }
 
