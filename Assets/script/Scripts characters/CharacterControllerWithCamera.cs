@@ -125,13 +125,13 @@ public class CharacterControllerWithCamera : MonoBehaviour
     // Calculer la distance entre le joueur et l'ennemi
     float distanceToEnemy = Vector3.Distance(transform.position, Enemy.position);  // Supposons que `enemy` soit une référence à l'ennemi
 
-    // Si le joueur est trop proche de l'ennemi, désactive le mouvement
-    if (distanceToEnemy <= 2f)  // Ajuste cette distance selon tes besoins
-    {
-        smoothMoveInput = Vector2.zero;  // Désactiver le mouvement
-    }
+    // Commenter ou supprimer cette partie pour que le joueur puisse se déplacer même lorsqu'il est proche de l'ennemi
+    // if (distanceToEnemy <= 2f)  // Ajuste cette distance selon tes besoins
+    // {
+    //     smoothMoveInput = Vector2.zero;  // Désactiver le mouvement
+    // }
 
-    // Si le joueur n'est pas trop proche, continuer à appliquer le mouvement
+    // Si smoothMoveInput n'est pas nul, continuer à appliquer le mouvement
     if (smoothMoveInput != Vector2.zero)
     {
         Vector3 forward = cameraTransform.forward;
@@ -143,6 +143,7 @@ public class CharacterControllerWithCamera : MonoBehaviour
         characterController.Move(moveDirection * currentMoveSpeed * Time.deltaTime);
     }
 }
+
 
 
     void RotateCharacterWithCamera()

@@ -9,19 +9,22 @@ public class EnemyAttack : MonoBehaviour
     [SerializeField] private float parryChance = 0.5f;  // Probabilité de parade
 
     private bool isAttacking = false;
+    private bool isParrying = false; // Indicateur pour savoir si l'ennemi est en train de parer
     private Transform player;
     private Animator animator;
-    private ParadeScript playerParadeScript; // Référence à ParadeScript
+    private ParadeScript playerParadeScript;
+
+    private EnemyAttackSound EnemyAttackSound;
+    private EnemyAttackSound EnemyParrySound;
 
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player").transform; // Trouve le joueur
+        player = GameObject.FindGameObjectWithTag("Player").transform;
         animator = GetComponent<Animator>();
-        
-
-        // Obtenir la référence à ParadeScript du joueur
         playerParadeScript = player.GetComponent<ParadeScript>();
-        
+
+        EnemyAttackSound = GetComponent<EnemyAttackSound>();
+        EnemyParrySound = GetComponent<EnemyAttackSound>();
     }
 
     public void Update()
@@ -30,69 +33,85 @@ public class EnemyAttack : MonoBehaviour
         {
             StartCoroutine(AttackWithDelay());
         }
+
+        // Si l'ennemi est en train de parer, jouer l'animation de parade
+        if (isParrying)
+        {
+            animator.SetBool("EnemyParry", true);
+        }
+        else
+        {
+            animator.SetBool("EnemyParry", false);
+        }
     }
 
     private IEnumerator AttackWithDelay()
-{
-    isAttacking = true;  // Indiquer que l'ennemi est en attaque
-
-    float attackDelay = Random.Range(minAttackDelay, maxAttackDelay);
-    yield return new WaitForSeconds(attackDelay);
-
-    if (animator != null)
     {
-        animator.SetBool("EnemyAttack", true); // Lancer l'attaque
-    }
+        isAttacking = true;
+        float attackDelay = Random.Range(minAttackDelay, maxAttackDelay);
+        yield return new WaitForSeconds(attackDelay);
 
-    // Attendre la durée de l'attaque pour simuler l'animation
-    yield return new WaitForSeconds(1f); // Simule la durée de l'animation d'attaque
-
-    // Vérification du contact avec le joueur et réduction des dégâts après l'attaque
-    if (Vector3.Distance(transform.position, player.position) <= attackRange)
-    {
-        PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
-        if (playerHealth != null)
+        if (animator != null)
         {
-            if (playerParadeScript != null && playerParadeScript.isParrying && !playerHealth.isAttacking)  // Si le joueur est en train de parer et n'attaque pas
+            animator.SetBool("EnemyAttack", true);
+        }
+
+        EnemyAttackSound?.EnemyPlayAttackSound();
+
+        yield return new WaitForSeconds(1f);
+
+        if (Vector3.Distance(transform.position, player.position) <= attackRange)
+        {
+            PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
             {
-                // Réduction des dégâts de 1/4 en cas de parade
-                playerHealth.TakeDamage(Random.Range(2f, 5f) * 0.75f, false);  // Réduit les dégâts de 25%
-            }
-            else
-            {
-                // Applique des dégâts à la santé du joueur
-                playerHealth.TakeDamage(Random.Range(2f, 5f), false);
+                if (playerParadeScript != null && playerParadeScript.isParrying && !playerHealth.isAttacking)
+                {
+                    playerHealth.TakeDamage(Random.Range(2f, 5f) * 0.75f, false);
+                    EnemyParrySound?.EnemyPlayParrySound();
+                }
+                else
+                {
+                    playerHealth.TakeDamage(Random.Range(2f, 5f), false);
+                }
             }
         }
+
+        if (animator != null)
+        {
+            animator.SetBool("EnemyAttack", false);
+        }
+
+        isAttacking = false;
     }
 
-    // Réinitialisation du paramètre d'attaque dans l'Animator
-    if (animator != null)
-    {
-        animator.SetBool("EnemyAttack", false);  // Fin de l'attaque
-    }
-
-    isAttacking = false;  // L'ennemi n'attaque plus
-}
-
-    // OnTriggerEnter corrigé pour appeler StartParry depuis ParadeScript
+    // Ajouter la logique de parade dans OnTriggerEnter
     private void OnTriggerEnter(Collider other)
-{
-    if (other.CompareTag("PlayerSword")) // Vérifie si c'est bien l'épée du joueur
     {
-        // Vérifiez maintenant l'état d'attaque dans AttaqueScript au lieu de ParadeScript
-        AttaqueScript playerAttackScript = player.GetComponent<AttaqueScript>();
-
-        if (playerAttackScript != null && !playerParadeScript.isParrying && !playerAttackScript.isAttacking)
+        if (other.CompareTag("PlayerSword"))
         {
-            if (Random.value < parryChance) // Si le nombre généré est inférieur à la probabilité de parade
+            AttaqueScript playerAttackScript = player.GetComponent<AttaqueScript>();
+
+            if (playerAttackScript != null && !playerParadeScript.isParrying && !playerAttackScript.isAttacking)
             {
-                playerParadeScript.StartParry(); // L'ennemi effectue une parade via ParadeScript
-               
+                if (Random.value < parryChance)
+                {
+                    // L'ennemi décide de parer
+                    isParrying = true;
+                    animator.SetBool("EnemyParry", true);
+
+                    // Ajouter un délai pour arrêter la parade après un certain temps
+                    StartCoroutine(StopParryAfterDelay(1f));
+                }
             }
-            
         }
     }
-}
-}
 
+    // Méthode pour arrêter la parade après un délai
+    private IEnumerator StopParryAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        isParrying = false;
+        animator.SetBool("EnemyParry", false);
+    }
+}
