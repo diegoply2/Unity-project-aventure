@@ -35,7 +35,7 @@ public class SwordScript : MonoBehaviour
             if (enemyHealth != null)
             {
                 // Inflige des dégâts à l'ennemi (vous pouvez ajuster le montant des dégâts ici)
-                enemyHealth.TakeDamage(10f); // Remplacez 10f par la valeur appropriée
+                enemyHealth.TakeDamage(5f); // Remplacez 10f par la valeur appropriée
                 Debug.Log("L'ennemi a perdu des points de santé !");
             }
         }
