@@ -139,20 +139,16 @@ public class AttaqueScript : MonoBehaviour
 
     // Cette méthode sera appelée lors de la collision de l'attaque avec un ennemi
     private void OnTriggerEnter(Collider other)
+{
+    // Cette partie n'est plus nécessaire car les dégâts sont gérés dans SwordScript
+    // Tu peux garder la détection de l'attaque ici si nécessaire, mais sans infliger de dégâts.
+    if (isAttacking)
     {
-        if (isAttacking)
+        // Vérifie si l'attaque touche un objet avec le tag "Enemy"
+        if (other.CompareTag("Enemy"))
         {
-            // Vérifier si l'attaque touche un objet avec le tag "Enemy"
-            if (other.CompareTag("Enemy"))
-            {
-                EnemyHealth enemyHealth = other.GetComponent<EnemyHealth>();
-                if (enemyHealth != null)
-                {
-                    // Infliger des dégâts à l'ennemi
-                    enemyHealth.TakeDamage(10f);  // Remplacez 10f par le montant des dégâts
-                    Debug.Log("L'ennemi a perdu des points de santé !");
-                }
-            }
+            // Cette partie n'est plus utilisée, les dégâts sont maintenant gérés dans SwordScript
         }
     }
+}
 }
