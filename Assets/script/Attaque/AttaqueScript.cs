@@ -65,11 +65,14 @@ public class AttaqueScript : MonoBehaviour
     // Active le collider de l'épée uniquement au moment de l'attaque
     if (sword != null)
     {
-        sword.GetComponent<Collider>().enabled = true;
+        Collider swordCollider = sword.GetComponent<Collider>();
+        swordCollider.enabled = true;  // Active le collider
+        Debug.Log("Épée Collider activé : " + swordCollider.enabled);  // Affiche si le collider est activé
     }
 
     StartCoroutine(ResetAttackBoolAfterDelay(2f));
 }
+
 
 private IEnumerator ResetAttackBoolAfterDelay(float delay)
 {

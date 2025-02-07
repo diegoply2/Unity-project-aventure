@@ -42,16 +42,24 @@ public class EnemyParry : MonoBehaviour
 }
 
     private IEnumerator ParryRoutine()
-    {
-        Debug.Log("Enemy commence à parer !");
-        isParrying = true;
-        animator.SetBool("EnemyParry", true);
-        enemyParrySound?.EnemyPlayParrySound();
+{
+    // Log quand l'ennemi commence à parer
+    Debug.Log("L'ennemi a commencé à parer !");
+    
+    // L'ennemi reste en parade pendant la durée définie par `parryDuration`
+    isParrying = true;
+    animator.SetBool("EnemyParry", true);
+    enemyParrySound?.EnemyPlayParrySound();
 
-        yield return new WaitForSeconds(parryDuration);
+    // Attend la durée de la parade avant de la terminer
+    yield return new WaitForSeconds(parryDuration);
 
-        Debug.Log("Enemy arrête de parer !");
-        isParrying = false;
-        animator.SetBool("EnemyParry", false);
-    }
+    // Log quand l'ennemi arrête de parer
+    Debug.Log("L'ennemi a arrêté de parer !");
+    
+    // Fin de la parade
+    isParrying = false;
+    animator.SetBool("EnemyParry", false);
+}
+
 }
