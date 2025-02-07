@@ -19,6 +19,9 @@ public class AttaqueScript : MonoBehaviour
     public GameObject sword;
 
     private PlayerHealth playerHealth;  // Déclarez playerHealth
+    public delegate void AttackStartedEventHandler(bool isAttacking);  // Ajout du paramètre
+public static event AttackStartedEventHandler OnAttackStarted;  // Déclaration de l'événement
+
 
     void Awake()
     {
@@ -39,27 +42,30 @@ public class AttaqueScript : MonoBehaviour
     }
 
     public void StartAttack()
+{
+    if (isAttacking) return;
+    isAttacking = true;
+
+    // Ajoutez ceci pour mettre à jour l'état de l'attaque
+    if (playerHealth != null)
     {
-        if (isAttacking) return;
-        isAttacking = true;
-
-        // Ajoutez ceci pour mettre à jour l'état de l'attaque
-        if (playerHealth != null)
-        {
-            playerHealth.isAttacking = true;
-        }
-
-        string randomAttackAnimation = attackAnimations[Random.Range(0, attackAnimations.Count)];
-        animator.SetBool(randomAttackAnimation, true);
-
-        attackSoundScript?.PlayAttackSound();
-
-        // Active le collider de l'épée
-        if (sword != null)
-            sword.GetComponent<Collider>().enabled = true;
-
-        StartCoroutine(ResetAttackBoolAfterDelay(2f));
+        playerHealth.isAttacking = true;
     }
+
+    string randomAttackAnimation = attackAnimations[Random.Range(0, attackAnimations.Count)];
+    animator.SetBool(randomAttackAnimation, true);
+
+    attackSoundScript?.PlayAttackSound();
+
+    // Activer le collider de l'épée
+    if (sword != null)
+        sword.GetComponent<Collider>().enabled = true;
+
+    // Lancer l'événement d'attaque, en indiquant que l'attaque est en cours
+    OnAttackStarted?.Invoke(true);  // Passez 'true' pour signifier que l'attaque a commencé
+
+    StartCoroutine(ResetAttackBoolAfterDelay(2f));
+}
 
     private IEnumerator ResetAttackBoolAfterDelay(float delay)
     {
@@ -71,11 +77,11 @@ public class AttaqueScript : MonoBehaviour
 
         isAttacking = false;
 
-        // Désactive le collider de l'épée après l'attaque
+        // Désactiver le collider de l'épée après l'attaque
         if (sword != null)
             sword.GetComponent<Collider>().enabled = false;
 
-        // Réinitialise l'état de l'attaque dans PlayerHealth
+        // Réinitialiser l'état de l'attaque dans PlayerHealth
         if (playerHealth != null)
         {
             playerHealth.isAttacking = false;
@@ -85,12 +91,12 @@ public class AttaqueScript : MonoBehaviour
     public void StopAttack()  // Nouvelle méthode pour arrêter l'attaque
     {
         isAttacking = false;
-        
+
         // Arrêter l'animation d'attaque si nécessaire
         animator.SetBool("Attack1", false);
         animator.SetBool("Attack2", false);
         animator.SetBool("Attack3", false);
-        
+
         // Désactiver le collider de l'épée immédiatement
         if (sword != null)
             sword.GetComponent<Collider>().enabled = false;
@@ -139,16 +145,14 @@ public class AttaqueScript : MonoBehaviour
 
     // Cette méthode sera appelée lors de la collision de l'attaque avec un ennemi
     private void OnTriggerEnter(Collider other)
-{
-    // Cette partie n'est plus nécessaire car les dégâts sont gérés dans SwordScript
-    // Tu peux garder la détection de l'attaque ici si nécessaire, mais sans infliger de dégâts.
-    if (isAttacking)
     {
-        // Vérifie si l'attaque touche un objet avec le tag "Enemy"
-        if (other.CompareTag("Enemy"))
+        if (isAttacking)
         {
-            // Cette partie n'est plus utilisée, les dégâts sont maintenant gérés dans SwordScript
+            // Vérifie si l'attaque touche un objet avec le tag "Enemy"
+            if (other.CompareTag("Enemy"))
+            {
+                // Cette partie n'est plus utilisée, les dégâts sont maintenant gérés dans SwordScript
+            }
         }
     }
-}
 }
