@@ -3,63 +3,66 @@ using System.Collections;
 
 public class EnemyParry : MonoBehaviour
 {
-    [SerializeField] private float parryChance = 1f;  // Probabilité de parade
-    [SerializeField] private float parryDuration = 1f;  // Durée de la parade
+    public GameObject player;  // Référence à l'objet du joueur
+    public float parryChance = 0.5f;  // 50% de chance de parer
+    public float parryDuration = 1f;  // Durée de la parade
 
     private Animator animator;
     private bool isParrying = false;
 
-    private EnemyAttackSound enemyParrySound;
+    // Référence au script EnemyAttackSound pour jouer les sons
+    private EnemyAttackSound enemyAttackSoundScript;
 
     void Start()
     {
         animator = GetComponent<Animator>();
-        enemyParrySound = GetComponent<EnemyAttackSound>();
-    }
 
-    public bool IsParrying()
-    {
-        return isParrying;
+        // Récupérer la référence au script EnemyAttackSound
+        enemyAttackSoundScript = GetComponent<EnemyAttackSound>();
+        if (enemyAttackSoundScript == null)
+        {
+            Debug.LogError("Le script EnemyAttackSound n'est pas attaché à l'ennemi.");
+        }
     }
 
     private void OnTriggerEnter(Collider other)
-{
-    Debug.Log("Collision détectée avec : " + other.gameObject.name);
-
-    // Vérifie si l'ennemi entre en collision avec l'épée du joueur
-    if (other.CompareTag("PlayerSword"))
     {
-        Debug.Log("L'ennemi a bien détecté PlayerSword !");
-
-        // Ici, on ne vérifie plus si le joueur attaque ou pare.
-        // L'ennemi peut parer s'il veut, en fonction de la probabilité
-        if (Random.value < parryChance)
+        // Vérifie si l'objet qui entre en collision est l'épée du joueur
+        if (other.CompareTag("PlayerSword"))
         {
-            Debug.Log("L'ennemi décide de parer !");
-            StartCoroutine(ParryRoutine());
+            // Tirage aléatoire pour déterminer si l'ennemi va parer
+            if (Random.value < parryChance)  // 50% de chance de parer
+            {
+                // L'ennemi décide de parer
+                isParrying = true;
+                animator.SetBool("EnemyParry", true);
+
+                // Ajouter un délai pour arrêter la parade après un certain temps
+                StartCoroutine(StopParryAfterDelay(parryDuration));  // Parer pendant 1 seconde
+
+                // Joue le son de parade si l'ennemi parre
+                if (enemyAttackSoundScript != null)
+                {
+                    enemyAttackSoundScript.EnemyPlayParrySound();
+                }
+
+                Debug.Log("L'ennemi a paré l'attaque !");
+            }
+            else
+            {
+                Debug.Log("L'ennemi n'a pas paré et a reçu l'attaque !");
+                // Si l'ennemi ne parre, on peut infliger des dégâts ou gérer d'autres actions
+            }
         }
     }
-}
 
-    private IEnumerator ParryRoutine()
-{
-    // Log quand l'ennemi commence à parer
-    Debug.Log("L'ennemi a commencé à parer !");
-    
-    // L'ennemi reste en parade pendant la durée définie par `parryDuration`
-    isParrying = true;
-    animator.SetBool("EnemyParry", true);
-    enemyParrySound?.EnemyPlayParrySound();
+    // Coroutine pour arrêter la parade après un délai
+    private IEnumerator StopParryAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
 
-    // Attend la durée de la parade avant de la terminer
-    yield return new WaitForSeconds(parryDuration);
-
-    // Log quand l'ennemi arrête de parer
-    Debug.Log("L'ennemi a arrêté de parer !");
-    
-    // Fin de la parade
-    isParrying = false;
-    animator.SetBool("EnemyParry", false);
-}
-
+        // Arrêter la parade et réinitialiser l'animation
+        isParrying = false;
+        animator.SetBool("EnemyParry", false);
+    }
 }
