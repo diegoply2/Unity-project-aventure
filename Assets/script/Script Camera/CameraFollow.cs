@@ -12,22 +12,32 @@ public class CameraFollow : MonoBehaviour
     private float currentRotation = 0f; // Rotation actuelle autour de l'axe Y
     private Vector3 currentVelocity = Vector3.zero; // Vitesse actuelle de la caméra pour le lissage
 
-    private PlayerControls controls;
+    private PlayerControls controls;  // Référence aux contrôles du joueur
     private Transform cameraTransform; // Référence à la caméra
 
+    private bool isFirstPersonView = false;  // Indicateur pour la vue à la première personne
+    private bool cameraTogglePressed = false; // Indicateur pour vérifier si le bouton a été pressé
+
+    // Singleton : une seule instance de CameraFollow accessible globalement
+    public static CameraFollow Instance { get; private set; }
+
     void Awake()
+{
+    // Vérifie si une instance existe déjà
+    if (Instance == null)
     {
-        // Assurez-vous que la caméra principale est assignée
-        cameraTransform = Camera.main?.transform; // Si vous utilisez la caméra principale
-        if (cameraTransform == null)
-        {
-            Debug.LogError("La caméra principale n'a pas été trouvée !");
-        }
+        Instance = this;  // Si ce n'est pas le cas, définit cette instance comme l'unique
     }
+    else if (Instance != this)
+    {
+        // Si une autre instance existe déjà, on détruit ce GameObject
+        Destroy(gameObject);
+    }
+}
 
     void OnEnable()
     {
-        // Pas besoin de vérifier à nouveau ici si la caméra est nulle
+        // Initialisation des contrôles
         if (controls == null)
         {
             controls = new PlayerControls();
@@ -49,25 +59,81 @@ public class CameraFollow : MonoBehaviour
         if (target == null)
             return; // Si le target est null, ne rien faire.
 
-        // Récupérer les entrées du stick droit (pour la rotation de la caméra)
-        Vector2 cameraInput = controls.Player.Camera.ReadValue<Vector2>();
-        float horizontalInput = cameraInput.x;
-        float verticalInput = cameraInput.y;
+        // Lire la valeur de l'action Camera1 (clic droit du joystick)
+        bool cameraToggle = controls.Player.Camera1.ReadValue<float>() > 0f;  // Vérifie si le bouton est pressé
 
-        // Calcul de la nouvelle rotation en fonction de l'entrée (rotation autour de l'axe Y)
-        currentRotation += horizontalInput * rotationSpeed * Time.deltaTime;
+        // Si le bouton est appuyé et qu'il n'a pas encore été pris en compte
+        if (cameraToggle && !cameraTogglePressed)
+        {
+            cameraTogglePressed = true;  // Empêche les multiples changements pendant un seul clic
+            ToggleCameraView();  // Bascule la vue de la caméra
+        }
+        else if (!cameraToggle)
+        {
+            cameraTogglePressed = false;  // Réinitialiser lorsque le bouton est relâché
+        }
 
-        // Calcul de la position désirée de la caméra derrière le joueur
-        Vector3 desiredPosition = target.position - target.forward * distance + Vector3.up * height;
+        if (!isFirstPersonView)
+        {
+            // Récupérer les entrées du stick droit (pour la rotation de la caméra)
+            Vector2 cameraInput = controls.Player.Camera.ReadValue<Vector2>();
+            float horizontalInput = cameraInput.x;
+            float verticalInput = cameraInput.y;
 
-        // Application du lissage de la position pour une caméra fluide
-        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref currentVelocity, smoothSpeed);
+            // Calcul de la nouvelle rotation en fonction de l'entrée (rotation autour de l'axe Y)
+            currentRotation += horizontalInput * rotationSpeed * Time.deltaTime;
 
-        // Faire tourner la caméra autour du personnage en fonction de l'entrée
-        transform.RotateAround(target.position, Vector3.up, horizontalInput * rotationSpeed * Time.deltaTime);
+            // Calcul de la position désirée de la caméra derrière le joueur
+            Vector3 desiredPosition = target.position - target.forward * distance + Vector3.up * height;
 
-        // Toujours faire en sorte que la caméra regarde le personnage (en tenant compte de la hauteur)
-        transform.LookAt(target.position + Vector3.up * height);
+            // Application du lissage de la position pour une caméra fluide
+            transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref currentVelocity, smoothSpeed);
+
+            // Faire tourner la caméra autour du personnage en fonction de l'entrée
+            transform.RotateAround(target.position, Vector3.up, horizontalInput * rotationSpeed * Time.deltaTime);
+
+            // Toujours faire en sorte que la caméra regarde le personnage (en tenant compte de la hauteur)
+            transform.LookAt(target.position + Vector3.up * height);
+        }
+        else
+        {
+            // Code pour la vue à la première personne (placer la caméra à la position du joueur par exemple)
+            transform.position = target.position + Vector3.up * height;
+            transform.rotation = target.rotation; // La caméra suit la rotation du joueur.
+        }
     }
+
+    void ToggleCameraView()
+    {
+        // Alterner entre la vue à la première personne et la vue à la troisième personne
+        isFirstPersonView = !isFirstPersonView;
+
+        if (isFirstPersonView)
+        {
+            SwitchToFirstPersonView();
+        }
+        else
+        {
+            SwitchToThirdPersonView();
+        }
+    }
+
+    void SwitchToFirstPersonView()
+    {
+        // Code pour passer à la vue à la première personne
+        Debug.Log("Passage à la vue à la première personne");
+    }
+
+    void SwitchToThirdPersonView()
+    {
+        // Code pour passer à la vue à la troisième personne
+        Debug.Log("Passage à la vue à la troisième personne");
+    }
+
+    public bool IsFirstPersonView()
+    {
+        return isFirstPersonView;  // Assurez-vous que 'isFirstPersonView' est public ou accessible
+    }
+
 }
 

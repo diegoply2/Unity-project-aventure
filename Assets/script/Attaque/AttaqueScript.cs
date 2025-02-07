@@ -19,9 +19,6 @@ public class AttaqueScript : MonoBehaviour
     public GameObject sword;
 
     private PlayerHealth playerHealth;  // Déclarez playerHealth
-    public delegate void AttackStartedEventHandler(bool isAttacking);  // Ajout du paramètre
-public static event AttackStartedEventHandler OnAttackStarted;  // Déclaration de l'événement
-
 
     void Awake()
     {
@@ -42,30 +39,27 @@ public static event AttackStartedEventHandler OnAttackStarted;  // Déclaration 
     }
 
     public void StartAttack()
-{
-    if (isAttacking) return;
-    isAttacking = true;
-
-    // Ajoutez ceci pour mettre à jour l'état de l'attaque
-    if (playerHealth != null)
     {
-        playerHealth.isAttacking = true;
+        if (isAttacking) return;
+        isAttacking = true;
+
+        // Ajoutez ceci pour mettre à jour l'état de l'attaque
+        if (playerHealth != null)
+        {
+            playerHealth.isAttacking = true;
+        }
+
+        string randomAttackAnimation = attackAnimations[Random.Range(0, attackAnimations.Count)];
+        animator.SetBool(randomAttackAnimation, true);
+
+        attackSoundScript?.PlayAttackSound();
+
+        // Activer le collider de l'épée
+        if (sword != null)
+            sword.GetComponent<Collider>().enabled = true;
+
+        StartCoroutine(ResetAttackBoolAfterDelay(2f));
     }
-
-    string randomAttackAnimation = attackAnimations[Random.Range(0, attackAnimations.Count)];
-    animator.SetBool(randomAttackAnimation, true);
-
-    attackSoundScript?.PlayAttackSound();
-
-    // Activer le collider de l'épée
-    if (sword != null)
-        sword.GetComponent<Collider>().enabled = true;
-
-    // Lancer l'événement d'attaque, en indiquant que l'attaque est en cours
-    OnAttackStarted?.Invoke(true);  // Passez 'true' pour signifier que l'attaque a commencé
-
-    StartCoroutine(ResetAttackBoolAfterDelay(2f));
-}
 
     private IEnumerator ResetAttackBoolAfterDelay(float delay)
     {
@@ -151,7 +145,14 @@ public static event AttackStartedEventHandler OnAttackStarted;  // Déclaration 
             // Vérifie si l'attaque touche un objet avec le tag "Enemy"
             if (other.CompareTag("Enemy"))
             {
-                // Cette partie n'est plus utilisée, les dégâts sont maintenant gérés dans SwordScript
+                // L'attaque du joueur entre en contact avec l'ennemi
+                EnemyParry enemyParry = other.GetComponent<EnemyParry>();
+                if (enemyParry != null)
+                {
+                    // Si l'ennemi a un script de parade, il réagira à l'attaque ici
+                    Debug.Log("L'ennemi entre en contact avec l'attaque.");
+                    // L'ennemi décidera de parer ou non en fonction de son propre système
+                }
             }
         }
     }
