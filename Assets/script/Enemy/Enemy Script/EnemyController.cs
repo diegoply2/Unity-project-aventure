@@ -27,7 +27,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float rotationSpeed = 5f;         // Vitesse de rotation
     private Vector3 currentMovementDirection;
 
-    private float pursuitTimerAfterLost = 6f;                   // Temps de poursuite après sortie du champ de vision
+    private float pursuitTimerAfterLost = 3f;                   // Temps de poursuite après sortie du champ de vision
 
     private EnemyAttack enemyAttack;                           // Référence au script EnemyAttack
 
@@ -202,7 +202,7 @@ public class EnemyController : MonoBehaviour
     float distanceToPlayer = Vector3.Distance(transform.position, enemyVision.player.position);
 
     // Si la distance est inférieure à 2 unités, l'ennemi est en combat et ne doit pas se déplacer
-    if (distanceToPlayer <= 1.5f)
+    if (distanceToPlayer <= 2f)
     {
         // Appeler l'attaque sans mouvement
         enemyAttack.Update();  // Lancer l'attaque ici

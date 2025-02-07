@@ -38,64 +38,49 @@ public class AttaqueScript : MonoBehaviour
         playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>();
     }
 
-    void Start()
-{
-    if (sword != null)
-    {
-        sword.GetComponent<Collider>().enabled = false;  // Désactive le collider au début
-    }
-}
-
-
     public void StartAttack()
-{
-    if (isAttacking) return;
-    isAttacking = true;
-
-    if (playerHealth != null)
     {
-        playerHealth.isAttacking = true;
+        if (isAttacking) return;
+        isAttacking = true;
+
+        // Ajoutez ceci pour mettre à jour l'état de l'attaque
+        if (playerHealth != null)
+        {
+            playerHealth.isAttacking = true;
+        }
+
+        string randomAttackAnimation = attackAnimations[Random.Range(0, attackAnimations.Count)];
+        animator.SetBool(randomAttackAnimation, true);
+
+        attackSoundScript?.PlayAttackSound();
+
+        // Active le collider de l'épée
+        if (sword != null)
+            sword.GetComponent<Collider>().enabled = true;
+
+        StartCoroutine(ResetAttackBoolAfterDelay(2f));
     }
 
-    string randomAttackAnimation = attackAnimations[Random.Range(0, attackAnimations.Count)];
-    animator.SetBool(randomAttackAnimation, true);
-
-    attackSoundScript?.PlayAttackSound();
-
-    // Active le collider de l'épée uniquement au moment de l'attaque
-    if (sword != null)
+    private IEnumerator ResetAttackBoolAfterDelay(float delay)
     {
-        Collider swordCollider = sword.GetComponent<Collider>();
-        swordCollider.enabled = true;  // Active le collider
-        Debug.Log("Épée Collider activé : " + swordCollider.enabled);  // Affiche si le collider est activé
+        yield return new WaitForSeconds(delay);
+
+        animator.SetBool("Attack1", false);
+        animator.SetBool("Attack2", false);
+        animator.SetBool("Attack3", false);
+
+        isAttacking = false;
+
+        // Désactive le collider de l'épée après l'attaque
+        if (sword != null)
+            sword.GetComponent<Collider>().enabled = false;
+
+        // Réinitialise l'état de l'attaque dans PlayerHealth
+        if (playerHealth != null)
+        {
+            playerHealth.isAttacking = false;
+        }
     }
-
-    StartCoroutine(ResetAttackBoolAfterDelay(2f));
-}
-
-
-private IEnumerator ResetAttackBoolAfterDelay(float delay)
-{
-    yield return new WaitForSeconds(delay);
-
-    animator.SetBool("Attack1", false);
-    animator.SetBool("Attack2", false);
-    animator.SetBool("Attack3", false);
-
-    isAttacking = false;
-
-    // Désactive le collider de l'épée après l'attaque
-    if (sword != null)
-    {
-        sword.GetComponent<Collider>().enabled = false;
-    }
-
-    if (playerHealth != null)
-    {
-        playerHealth.isAttacking = false;
-    }
-}
-
 
     public void StopAttack()  // Nouvelle méthode pour arrêter l'attaque
     {
@@ -164,7 +149,7 @@ private IEnumerator ResetAttackBoolAfterDelay(float delay)
                 if (enemyHealth != null)
                 {
                     // Infliger des dégâts à l'ennemi
-                    enemyHealth.TakeDamage(5f);  // Remplacez 10f par le montant des dégâts
+                    enemyHealth.TakeDamage(10f);  // Remplacez 10f par le montant des dégâts
                     Debug.Log("L'ennemi a perdu des points de santé !");
                 }
             }
