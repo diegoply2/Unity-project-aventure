@@ -3,7 +3,7 @@ using System.Collections;
 
 public class EnemyParry : MonoBehaviour
 {
-    [SerializeField] private float parryChance = 0.5f;  // Probabilité de parade
+    [SerializeField] private float parryChance = 1f;  // Probabilité de parade
     [SerializeField] private float parryDuration = 1f;  // Durée de la parade
 
     private Animator animator;
@@ -23,25 +23,23 @@ public class EnemyParry : MonoBehaviour
     }
 
     private void OnTriggerEnter(Collider other)
+{
+    Debug.Log("Collision détectée avec : " + other.gameObject.name);
+
+    // Vérifie si l'ennemi entre en collision avec l'épée du joueur
+    if (other.CompareTag("PlayerSword"))
     {
-        Debug.Log("Collision détectée avec : " + other.gameObject.name);
+        Debug.Log("L'ennemi a bien détecté PlayerSword !");
 
-        if (other.CompareTag("PlayerSword"))
+        // Ici, on ne vérifie plus si le joueur attaque ou pare.
+        // L'ennemi peut parer s'il veut, en fonction de la probabilité
+        if (Random.value < parryChance)
         {
-            Debug.Log("L'ennemi a bien détecté PlayerSword !");
-            AttaqueScript playerAttackScript = other.GetComponentInParent<AttaqueScript>();
-            ParadeScript playerParadeScript = other.GetComponentInParent<ParadeScript>();
-
-            if (playerAttackScript != null && playerParadeScript != null && !playerParadeScript.isParrying && !playerAttackScript.isAttacking)
-            {
-                if (Random.value < parryChance)
-                {
-                    Debug.Log("L'ennemi décide de parer !");
-                    StartCoroutine(ParryRoutine());
-                }
-            }
+            Debug.Log("L'ennemi décide de parer !");
+            StartCoroutine(ParryRoutine());
         }
     }
+}
 
     private IEnumerator ParryRoutine()
     {
