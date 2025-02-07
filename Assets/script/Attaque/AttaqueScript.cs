@@ -58,7 +58,7 @@ public class AttaqueScript : MonoBehaviour
         if (sword != null)
             sword.GetComponent<Collider>().enabled = true;
 
-        StartCoroutine(ResetAttackBoolAfterDelay(2f));
+        StartCoroutine(ResetAttackBoolAfterDelay(1f));
     }
 
     private IEnumerator ResetAttackBoolAfterDelay(float delay)

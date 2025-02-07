@@ -96,11 +96,12 @@ public class CameraFollow : MonoBehaviour
             transform.LookAt(target.position + Vector3.up * height);
         }
         else
-        {
-            // Code pour la vue à la première personne (placer la caméra à la position du joueur par exemple)
-            transform.position = target.position + Vector3.up * height;
-            transform.rotation = target.rotation; // La caméra suit la rotation du joueur.
-        }
+    {
+        // Décalage léger vers l'arrière pour éviter que la caméra soit trop proche
+        Vector3 offset = -target.forward * 0.1f; // Ajustez la valeur pour reculer plus ou moins
+        transform.position = target.position + Vector3.up * height + offset;
+        transform.rotation = target.rotation; // La caméra suit la rotation du joueur.
+    }
     }
 
     void ToggleCameraView()
