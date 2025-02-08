@@ -121,6 +121,23 @@ public class PlayerHealth : MonoBehaviour
     // Vous pouvez également arrêter les autres actions comme l'attaque ou les animations de mouvement si nécessaire
 }
 
+public void RestoreHealth(float amount)
+{
+    currentHealth += amount; // Ajouter la quantité de santé à la santé actuelle
+    if (currentHealth > maxHealth) // Assurez-vous que la santé ne dépasse pas la santé maximale
+    {
+        currentHealth = maxHealth;
+    }
+
+    if (healthSlider != null)
+    {
+        healthSlider.value = currentHealth; // Mettre à jour le slider
+    }
+
+    Debug.Log("Santé restaurée. Nouvelle santé : " + currentHealth);
+}
+
+
 
 }
 
