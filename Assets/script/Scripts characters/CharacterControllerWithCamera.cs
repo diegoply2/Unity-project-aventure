@@ -67,6 +67,9 @@ public class CharacterControllerWithCamera : MonoBehaviour
         runAction.canceled += ctx => StopRunning();
 
         attackAction = playerControls.Player.Attack;
+
+        // S'assurer que l'ennemi commence sur le sol
+        SnapToGround();
     }
 
     void Update()
@@ -121,30 +124,28 @@ public class CharacterControllerWithCamera : MonoBehaviour
     }
 
     void MoveCharacter()
-{
-    // Calculer la distance entre le joueur et l'ennemi
-    float distanceToEnemy = Vector3.Distance(transform.position, Enemy.position);  // Supposons que `enemy` soit une référence à l'ennemi
-
-    // Commenter ou supprimer cette partie pour que le joueur puisse se déplacer même lorsqu'il est proche de l'ennemi
-    // if (distanceToEnemy <= 2f)  // Ajuste cette distance selon tes besoins
-    // {
-    //     smoothMoveInput = Vector2.zero;  // Désactiver le mouvement
-    // }
-
-    // Si smoothMoveInput n'est pas nul, continuer à appliquer le mouvement
-    if (smoothMoveInput != Vector2.zero)
     {
-        Vector3 forward = cameraTransform.forward;
-        Vector3 right = cameraTransform.right;
-        forward.y = 0f; right.y = 0f; forward.Normalize(); right.Normalize();
-        Vector3 moveDirection = (forward * smoothMoveInput.y + right * smoothMoveInput.x).normalized;
+        // Calculer la distance entre le joueur et l'ennemi
+        float distanceToEnemy = Vector3.Distance(transform.position, Enemy.position);  // Supposons que `enemy` soit une référence à l'ennemi
 
-        float currentMoveSpeed = isRunning ? runSpeed : moveSpeed;
-        characterController.Move(moveDirection * currentMoveSpeed * Time.deltaTime);
+        // Commenter ou supprimer cette partie pour que le joueur puisse se déplacer même lorsqu'il est proche de l'ennemi
+        // if (distanceToEnemy <= 2f)  // Ajuste cette distance selon tes besoins
+        // {
+        //     smoothMoveInput = Vector2.zero;  // Désactiver le mouvement
+        // }
+
+        // Si smoothMoveInput n'est pas nul, continuer à appliquer le mouvement
+        if (smoothMoveInput != Vector2.zero)
+        {
+            Vector3 forward = cameraTransform.forward;
+            Vector3 right = cameraTransform.right;
+            forward.y = 0f; right.y = 0f; forward.Normalize(); right.Normalize();
+            Vector3 moveDirection = (forward * smoothMoveInput.y + right * smoothMoveInput.x).normalized;
+
+            float currentMoveSpeed = isRunning ? runSpeed : moveSpeed;
+            characterController.Move(moveDirection * currentMoveSpeed * Time.deltaTime);
+        }
     }
-}
-
-
 
     void RotateCharacterWithCamera()
     {
@@ -224,23 +225,23 @@ public class CharacterControllerWithCamera : MonoBehaviour
     }
 
     void OnDisable()
-{
-    if (playerControls != null)
     {
-        playerControls.Disable();
-        Debug.Log("Contrôles du joueur désactivés.");
-    }
-    else
-    {
-        Debug.LogWarning("playerControls est null. Impossible de désactiver.");
-    }
+        if (playerControls != null)
+        {
+            playerControls.Disable();
+            Debug.Log("Contrôles du joueur désactivés.");
+        }
+        else
+        {
+            Debug.LogWarning("playerControls est null. Impossible de désactiver.");
+        }
 
-    // Désactivation des autres scripts liés si nécessaire
-    if (attackScript != null)
-    {
-        attackScript.StopAttack(); // Si vous avez une fonction d'arrêt d'attaque
+        // Désactivation des autres scripts liés si nécessaire
+        if (attackScript != null)
+        {
+            attackScript.StopAttack(); // Si vous avez une fonction d'arrêt d'attaque
+        }
     }
-}
 
     public void Die()
     {
@@ -258,5 +259,16 @@ public class CharacterControllerWithCamera : MonoBehaviour
     public void EnableMovement()
     {
         moveInput = playerControls.Player.Move.ReadValue<Vector2>();
+    }
+
+    void SnapToGround()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, Mathf.Infinity))
+        {
+            // Positionner l'ennemi juste au-dessus du point de collision du terrain
+            transform.position = new Vector3(transform.position.x, hit.point.y + 0.1f, transform.position.z);
+            Debug.Log("Ennemi placé correctement sur le sol.");
+        }
     }
 }

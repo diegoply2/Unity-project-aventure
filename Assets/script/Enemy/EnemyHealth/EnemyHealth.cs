@@ -38,24 +38,41 @@ public class EnemyHealth : MonoBehaviour
         }
     }
 
-    private void Die()
+private void Die()
+{
+    isDead = true;
+
+    // Désactiver l'animation de mouvement et jouer l'animation de mort
+    if (animator != null)
     {
-        isDead = true;
-
-        if (animator != null)
-        {
-            animator.SetBool("EnemyDie", true);  // Joue une animation de mort si vous en avez une
-        }
-
-        // Empêche d'autres interactions
-        GetComponent<Collider>().enabled = false;  // Désactive les collisions
-
-        // Désactive le CharacterController si présent
-        if (characterController != null)
-        {
-            characterController.enabled = false;  // Empêche les déplacements du personnage
-        }
-
-        
+        animator.SetBool("EnemyDie", true);  // Active l'animation de mort
     }
+
+    // Désactiver le CharacterController s'il existe
+    if (characterController != null)
+    {
+        characterController.enabled = false;  // Désactive le CharacterController pour éviter les conflits
+    }
+
+    // Désactiver la physique pour éviter que l'ennemi tombe
+    Rigidbody rb = GetComponent<Rigidbody>();
+    if (rb != null)
+    {
+        rb.isKinematic = true;  // Désactiver la gravité pour éviter la chute
+        rb.linearVelocity = Vector3.zero;  // Stopper tout mouvement
+    }
+
+    // Ne PAS désactiver le Collider, sinon l'ennemi traverse le sol !
+    Collider col = GetComponent<Collider>();
+    if (col != null)
+    {
+        col.enabled = true; // Laisse le collider actif pour qu'il reste sur le sol
+    }
+
+    // L'ennemi ne disparaît PAS et ne tombe plus à travers le sol !
+}
+
+
+
+
 }

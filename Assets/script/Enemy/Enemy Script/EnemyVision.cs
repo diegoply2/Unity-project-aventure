@@ -9,42 +9,47 @@ public class EnemyVision : MonoBehaviour
 
     public bool playerInSight { get; private set; }
 
+    void Start()
+    {
+        playerInSight = false;  // Initialisation correcte
+    }
+
     void Update()
     {
         DetectPlayer();
     }
 
     void DetectPlayer()
-{
-    Vector3 directionToPlayer = player.position - transform.position;
-    float angleToPlayer = Vector3.Angle(directionToPlayer, transform.forward);
-    
-    //Debug.Log("Angle vers le joueur : " + angleToPlayer);
-
-    Debug.DrawRay(transform.position + Vector3.up * 1.5f, directionToPlayer.normalized * viewDistance, Color.red);
-
-    if (angleToPlayer <= viewAngle / 2f)
     {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position + Vector3.up * 1.5f, directionToPlayer.normalized, out hit, viewDistance, whatIsPlayer))
+        Vector3 directionToPlayer = player.position - transform.position;
+        float angleToPlayer = Vector3.Angle(directionToPlayer, transform.forward);
 
+        // Debugging
+        Debug.DrawRay(transform.position + Vector3.up * 1.5f, directionToPlayer.normalized * viewDistance, Color.red);
+
+        if (angleToPlayer <= viewAngle / 2f)
         {
-            Debug.Log("Raycast touche : " + hit.transform.name);
-
-            if (hit.transform.CompareTag("Player"))
+            RaycastHit hit;
+            if (Physics.Raycast(transform.position + Vector3.up * 1.5f, directionToPlayer.normalized, out hit, viewDistance, whatIsPlayer))
             {
-                playerInSight = true;
-                Debug.Log("Joueur détecté !");
-                return;
+                Debug.Log("Raycast touche : " + hit.transform.name);
+
+                if (hit.transform.CompareTag("Player"))
+                {
+                    playerInSight = true;
+                    Debug.Log("Joueur détecté !");
+                    return;
+                }
             }
         }
+
+        playerInSight = false;
+        Debug.Log("Joueur hors de vue.");
     }
-
-    playerInSight = false;
-    Debug.Log("Joueur hors de vue.");
 }
 
 
 
 
-}
+
+

@@ -8,10 +8,12 @@ public class MusicManager : MonoBehaviour
     private float maxTrackTime = 180f; // 3 minutes
     private float nextTrackTime;
     [SerializeField] private float initialFadeInDuration = 20f; // Durée du fade-in au démarrage
+    private float maxVolume = 0.40f; // Volume maximum de la musique
 
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
+        audioSource.volume = maxVolume; // Assurez-vous que le volume ne dépasse pas 0.45
         PlayRandomTrackWithFade();
     }
 
@@ -54,7 +56,7 @@ public class MusicManager : MonoBehaviour
 
     System.Collections.IEnumerator FadeIn(AudioSource source, float fadeDuration)
     {
-        float targetVolume = 1.0f;
+        float targetVolume = maxVolume; // Utiliser maxVolume au lieu de 1.0f
 
         // Si c'est un fade-in initial, commence avec une faible volume
         if (source.volume == 0)
