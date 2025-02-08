@@ -7,9 +7,10 @@ public class FootstepSound : MonoBehaviour
     public AudioClip footstepSoundRun;  // Son de course
     public AudioClip jumpSound;         // Son de saut
     public AudioClip landSound;         // Son d'atterrissage
-          // Son d'attaque (ajouté pour l'attaque)
     public float walkInterval = 0.5f;   // Intervalle entre les pas en marchant
     public float runInterval = 0.3f;    // Intervalle entre les pas en courant
+
+    public float soundVolume = 1f;      // Volume global pour les sons (0 à 1)
 
     private CharacterController characterController;
     private CharacterControllerWithCamera playerController;
@@ -25,6 +26,9 @@ public class FootstepSound : MonoBehaviour
         {
             audioSource = gameObject.AddComponent<AudioSource>(); // Ajouter un AudioSource si absent
         }
+
+        // Appliquer le volume
+        audioSource.volume = soundVolume;
 
         // Récupérer le CharacterController et le script de mouvement
         characterController = GetComponent<CharacterController>();
@@ -60,8 +64,6 @@ public class FootstepSound : MonoBehaviour
         {
             PlayLandSound();
         }
-
-        
 
         wasGrounded = characterController.isGrounded; // Mettre à jour l'état du sol
 
@@ -114,6 +116,4 @@ public class FootstepSound : MonoBehaviour
             audioSource.PlayOneShot(landSound);
         }
     }
-
-
 }
