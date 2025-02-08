@@ -98,7 +98,7 @@ public class CameraFollow : MonoBehaviour
         else
     {
         // Décalage léger vers l'arrière pour éviter que la caméra soit trop proche
-        Vector3 offset = -target.forward * 0.1f; // Ajustez la valeur pour reculer plus ou moins
+        Vector3 offset = -target.forward * 0f; // Ajustez la valeur pour reculer plus ou moins
         transform.position = target.position + Vector3.up * height + offset;
         transform.rotation = target.rotation; // La caméra suit la rotation du joueur.
     }

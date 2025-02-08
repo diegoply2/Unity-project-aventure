@@ -17,7 +17,7 @@ public class EnemyController : MonoBehaviour
 
     private bool isPursuing = false;
     private float pursueRemainingTime = 0f;                      // Timer pour poursuivre après la perte de vue du joueur
-    [SerializeField] private float pursueDuration = 5f;         // Durée de poursuite après perte de vue
+    [SerializeField] private float pursueDuration = 8f;         // Durée de poursuite après perte de vue
 
     private bool isPaused = false;                             // Indicateur si l'ennemi est en pause
     private float pauseTimer = 0f;                             // Timer pour la pause
@@ -27,7 +27,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float rotationSpeed = 5f;         // Vitesse de rotation
     private Vector3 currentMovementDirection;
 
-    private float pursuitTimerAfterLost = 3f;                   // Temps de poursuite après sortie du champ de vision
+    private float pursuitTimerAfterLost = 8f;                   // Temps de poursuite après sortie du champ de vision
 
     private EnemyAttack enemyAttack;                           // Référence au script EnemyAttack
 
@@ -128,19 +128,22 @@ public class EnemyController : MonoBehaviour
     }
 
     void HandleRandomMovement()
+{
+    if (isPaused)
     {
-        if (isPaused)
+        // Si l'ennemi est en pause, décrémente le timer de la pause
+        pauseTimer -= Time.deltaTime;
+        if (pauseTimer <= 0f)
         {
-            // Si l'ennemi est en pause, décrémente le timer de la pause
-            pauseTimer -= Time.deltaTime;
-            if (pauseTimer <= 0f)
-            {
-                isPaused = false;  // Sortir de la pause lorsque le temps est écoulé
-                print("L'ennemi reprend son mouvement.");
-            }
-            return;  // Ne pas déplacer l'ennemi pendant la pause
+            isPaused = false;  // Sortir de la pause lorsque le temps est écoulé
+            print("L'ennemi reprend son mouvement.");
         }
+        return;  // Ne pas déplacer l'ennemi pendant la pause
+    }
 
+    // Vérifie si le CharacterController est activé avant de déplacer
+    if (characterController != null && characterController.enabled)
+    {
         // Calculer la direction de mouvement en fonction de la direction du regard de l'ennemi
         Vector3 forwardDirection = transform.forward;  // Utilise la direction avant de l'ennemi
         Vector3 moveDirection = new Vector3(randomMovementDirection.x, 0f, randomMovementDirection.y).normalized;
@@ -172,6 +175,11 @@ public class EnemyController : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);  // Rotation fluide
         }
     }
+    else
+    {
+        Debug.LogWarning("CharacterController est désactivé. Impossible de déplacer l'ennemi.");
+    }
+}
 
     void ChooseNewRandomDirection()
     {
@@ -195,47 +203,49 @@ public class EnemyController : MonoBehaviour
 {
     if (isDead || characterController == null || !characterController.enabled) return;  // Vérifie si l'ennemi est mort ou si le CharacterController est désactivé
 
-    // Calculer la direction vers le joueur
-    Vector3 directionToPlayer = (enemyVision.player.position - transform.position).normalized;
-
-    // Calculer la distance entre l'ennemi et le joueur
-    float distanceToPlayer = Vector3.Distance(transform.position, enemyVision.player.position);
-
-    // Si la distance est inférieure à 2 unités, l'ennemi est en combat et ne doit pas se déplacer
-    if (distanceToPlayer <= 2f)
+    // Vérifie si le CharacterController est activé avant de déplacer
+    if (characterController != null && characterController.enabled)
     {
-        // Appeler l'attaque sans mouvement
-        enemyAttack.Update();  // Lancer l'attaque ici
-        return;  // L'ennemi cesse de se déplacer à cette distance
+        // Calculer la direction vers le joueur
+        Vector3 directionToPlayer = (enemyVision.player.position - transform.position).normalized;
+
+        // Calculer la distance entre l'ennemi et le joueur
+        float distanceToPlayer = Vector3.Distance(transform.position, enemyVision.player.position);
+
+        // Si la distance est inférieure à 2 unités, l'ennemi est en combat et ne doit pas se déplacer
+        if (distanceToPlayer <= 2f)
+        {
+            // Appeler l'attaque sans mouvement
+            enemyAttack.Update();  // Lancer l'attaque ici
+            return;  // L'ennemi cesse de se déplacer à cette distance
+        }
+
+        // Si l'ennemi n'est pas à portée de combat, se déplacer vers le joueur
+        float currentSpeed = isPursuing ? pursuitSpeed : moveSpeed;
+
+        // Déplacer l'ennemi vers le joueur uniquement si la distance est suffisamment grande
+        if (distanceToPlayer > 2f)  // Empêche l'ennemi de continuer à se déplacer si déjà en combat
+        {
+            characterController.Move(directionToPlayer * currentSpeed * Time.deltaTime);
+        }
+
+        // Si la direction vers le joueur est valide, effectuer une rotation fluide
+        if (directionToPlayer != Vector3.zero)
+        {
+            // Calculer la rotation nécessaire pour faire face au joueur
+            Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
+
+            // Appliquer la rotation fluide avec Quaternion.Slerp
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        }
+
+        UpdateAnimator(directionToPlayer);
     }
-
-    // Si l'ennemi n'est pas à portée de combat, se déplacer vers le joueur
-    float currentSpeed = isPursuing ? pursuitSpeed : moveSpeed;
-
-    // Déplacer l'ennemi vers le joueur uniquement si la distance est suffisamment grande
-    if (distanceToPlayer > 2f)  // Empêche l'ennemi de continuer à se déplacer si déjà en combat
+    else
     {
-        characterController.Move(directionToPlayer * currentSpeed * Time.deltaTime);
+        Debug.LogWarning("CharacterController est désactivé. Impossible de déplacer l'ennemi.");
     }
-
-    // Si la direction vers le joueur est valide, effectuer une rotation fluide
-    if (directionToPlayer != Vector3.zero)
-    {
-        // Calculer la rotation nécessaire pour faire face au joueur
-        Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
-
-        // Appliquer la rotation fluide avec Quaternion.Slerp
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-    }
-
-    UpdateAnimator(directionToPlayer);
 }
-
-
-
-
-
-
 
     void StartPause()
     {
